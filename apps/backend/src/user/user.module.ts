@@ -4,17 +4,22 @@ import { UserController } from './user.controller';
 import { User } from './user.entity';
 import { UserService } from './user.service';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { RosterController } from './roster.controller';
+import { RosterService } from './roster.service';
 
 @Module({
-  controllers: [UserController],
+  controllers: [UserController, RosterController],
   exports: [UserService],
   imports: [MikroOrmModule.forFeature({ entities: [User] })],
-  providers: [UserService],
+  providers: [UserService, RosterService],
 })
 export class UserModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .forRoutes({ path: 'user', method: RequestMethod.GET }, { path: 'user', method: RequestMethod.PUT });
+      .forRoutes(
+        { path: 'user', method: RequestMethod.GET },
+        { path: 'user', method: RequestMethod.PUT }
+      );
   }
 }

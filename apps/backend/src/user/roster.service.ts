@@ -1,24 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/mysql';
+import { UserRepository } from './user.repository'; // chỉnh đường dẫn nếu sai
+import { User } from './user.entity'; // nếu có entity User (nếu không có thì bỏ dòng này)
 
 @Injectable()
 export class RosterService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(private userRepository: UserRepository) {}
 
-  async getRoster() {
-    const users = await this.em.getConnection().execute(`
-      SELECT
-        u.username,
-        u.slug as profileUrl,
-        COUNT(a.id) as articlesCount,
-        COALESCE(SUM(a.favoritesCount), 0) as favoritesCount,
-        MIN(a.createdAt) as firstArticleDate
-      FROM user u
-      LEFT JOIN article a ON a.author_id = u.id
-      GROUP BY u.id
-      ORDER BY favoritesCount DESC;
-    `);
+  async getRosterStats(): Promise<any[]> {
+    const users = await this.userRepository.findAll({
+      populate: ['articles'], // chỉ load articles
+    });
 
-    return users;
+    // Load thêm favoritedBy của từng bài viết
+    for (const user of users) {
+      await user.articles?.init(); // load articles nếu là Collection
+      for (const article of user.articles ?? []) {
+        await article.favoritedBy?.init(); // load favoritedBy
+      }
+    }
+
+    return users.map((user: any) => {
+      const articles = user.articles || [];
+
+      const totalArticles = articles.length;
+
+      const totalFavorites = articles.reduce((sum: number, article: any) => {
+        return sum + (article.favoritedBy?.length || 0);
+      }, 0);
+
+      const firstPostDate = articles.length
+        ? new Date(Math.min(...articles.map((a: any) => a.createdAt.getTime())))
+        : null;
+
+      return {
+        username: user.username,
+        profileUrl: `/profile/${user.username}`,
+        totalArticles,
+        totalFavorites,
+        firstPostDate,
+      };
+    });
   }
 }

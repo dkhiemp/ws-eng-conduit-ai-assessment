@@ -5,6 +5,7 @@ import {
   EntityDTO,
   ManyToOne,
   OneToMany,
+  ManyToMany, // ✅ thêm dòng này
   PrimaryKey,
   Property,
   wrap,
@@ -45,6 +46,9 @@ export class Article {
 
   @OneToMany(() => Comment, (comment) => comment.article, { eager: true, orphanRemoval: true })
   comments = new Collection<Comment>(this);
+
+  @ManyToMany(() => User, user => user.favorites) // ✅ thêm đoạn này
+  favoritedBy = new Collection<User>(this);       // ✅ và đoạn này
 
   @Property({ type: 'number' })
   favoritesCount = 0;

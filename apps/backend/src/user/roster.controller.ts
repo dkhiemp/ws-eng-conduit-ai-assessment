@@ -1,12 +1,14 @@
+// roster.controller.ts
+
 import { Controller, Get } from '@nestjs/common';
 import { RosterService } from './roster.service';
 
-@Controller('roster')
+@Controller('users')
 export class RosterController {
-  constructor(private readonly rosterService: RosterService) {}
+  constructor(private readonly userService: RosterService) {}
 
-  @Get()
-  getRoster() {
-    return this.rosterService.getRoster();
+  @Get('roster')
+  async getRoster(): Promise<Record<string, any>[]> {
+    return this.userService.getRosterStats();
   }
 }

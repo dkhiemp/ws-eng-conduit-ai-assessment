@@ -10,6 +10,10 @@ import { provideEffects } from '@ngrx/effects';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { API_URL } from '@realworld/core/http-client';
 import { environment } from '../environments/environment';
+
+// ✅ IMPORT COMPONENT ROSTER
+import { RosterComponent } from './pages/roster/roster.component';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter([
@@ -50,7 +54,7 @@ export const appConfig: ApplicationConfig = {
       },
       {
         path: 'roster',
-        loadChildren: () => import('@realworld/roster/src/lib/roster.routes').then((m) => m.ROSTER_ROUTES),
+        component: RosterComponent, // ✅ sử dụng trực tiếp component vừa tạo
       },
     ]),
     provideStore({
